@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sport Booking Dashboard</title>
+    <style>
+        :root { --primary: #2563eb; --success: #22c55e; --danger: #ef4444; --bg: #f8fafc; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: #1e293b; margin: 0; padding: 2rem; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        
+        /* Header & Controls */
+        .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+        .controls { display: flex; gap: 10px; }
+        
+        /* Inputs */
+        select, button { padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600; cursor: pointer; border: 1px solid #cbd5e1; }
+        select { background: white; color: #1e293b; min-width: 200px; }
+        .filter-btn { background: white; color: var(--primary); border: 1px solid var(--primary); transition: all 0.2s; }
+        .filter-btn:hover, .filter-btn.active { background: var(--primary); color: white; }
+
+        /* Date Blocks */
+        .date-block { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); margin-bottom: 2.5rem; overflow: hidden; border: 1px solid #e2e8f0; }
+        .date-header { background: var(--primary); color: white; padding: 1rem 1.5rem; font-size: 1.5rem; font-weight: 700; }
+        
+        /* Location & Courts */
+        .location-container { padding: 1.5rem; border-bottom: 1px solid #f1f5f9; }
+        .location-name { font-size: 1.1rem; font-weight: 600; color: var(--primary); margin-bottom: 1rem; display: flex; align-items: center; }
+        .location-name::before { content: '📍'; margin-right: 8px; }
+        
+        .court-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+        .court-card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem; background: #fff; }
+        .court-title { font-weight: 700; margin-bottom: 0.5rem; border-bottom: 1px solid #eee; padding-bottom: 4px; }
+        
+        /* Table */
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th { text-align: left; color: #64748b; font-weight: 600; padding: 4px; }
+        td { padding: 6px 4px; border-bottom: 1px solid #f8fafc; }
+        
+        .available { color: var(--success); font-weight: 600; }
+        .booked { color: #cbd5e1; text-decoration: line-through; }
+        .price-tag { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+        
+        /* Empty State */
+        .no-data { text-align: center; padding: 4rem; color: #64748b; }
+    </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // 1. Populate the Date Dropdown automatically
+            const dateBlocks = document.querySelectorAll('.date-block');
+            const dateSelect = document.getElementById('dateFilter');
+            
+            dateBlocks.forEach(block => {
+                const dateVal = block.getAttribute('data-date'); // Gets '2025-12-25'
+                const dateText = block.querySelector('.date-header').innerText; // Gets 'Thursday, 25 Dec 2025'
+                
+                const option = document.createElement('option');
+                option.value = dateVal;
+                option.innerText = dateText;
+                dateSelect.appendChild(option);
+            });
+        });
+
+        function filterDates() {
+            const selectedDate = document.getElementById('dateFilter').value;
+            const blocks = document.querySelectorAll('.date-block');
+
+            blocks.forEach(block => {
+                if (selectedDate === 'all' || block.getAttribute('data-date') === selectedDate) {
+                    block.style.display = 'block';
+                } else {
+                    block.style.display = 'none';
+                }
+            });
+        }
+
+        function toggleBooked() {
+            const btn = document.querySelector('.filter-btn');
+            btn.classList.toggle('active');
+            
+            const bookedRows = document.querySelectorAll('.booked-row');
+            bookedRows.forEach(row => {
+                row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="header-row">
+            <h1>📅 Booking Explorer</h1>
+            
+            <div class="controls">
+                <select id="dateFilter" onchange="filterDates()">
+                    <option value="all">Show All Dates</option>
+                </select>
+
+                <button class="filter-btn" onclick="toggleBooked()">Hide/Show Booked</button>
+            </div>
+        </div>
+        
+        <div id="content-area">
+            {{content}}
+        </div>
+    </div>
+</body>
+</html>

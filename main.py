@@ -1,71 +1,67 @@
-import os
-import time
-from datetime import datetime, timedelta
-from dotenv import load_dotenv, set_key
-from scraper.client import WebClient
+from fastapi import FastAPI, BackgroundTasks, HTTPException
+from fastapi.responses import HTMLResponse
+from pydantic import BaseModel, validator
+from typing import Optional
+import re
 
-load_dotenv()
+# Import logic from other files
+from scraper.service import run_scraper_process
+from templates.visualize import generate_dashboard_html
 
-def main():
-    baseUrl = os.getenv("WEB_BASE_URL")
-    email = os.getenv("WEB_EMAIL")
-    password = os.getenv("WEB_PASSWORD")
-    token = os.getenv("WEB_TOKEN")
+app = FastAPI(title="Sport Booking Scraper Microservice")
 
-    client = WebClient(baseUrl, email, password, token=token)
+# --- Input Models ---
+class ScrapeRequest(BaseModel):
+    mode: str  # Options: 'weekend', 'all', 'single'
+    date: Optional[str] = None # Format: YYYY-MM-DD (Only for 'single' mode)
+
+    @validator('mode')
+    def validate_mode(cls, v):
+        allowed = ['weekend', 'all', 'single']
+        if v not in allowed:
+            raise ValueError(f"Mode must be one of {allowed}")
+        return v
+
+    @validator('date')
+    def validate_date_format(cls, v):
+        if v and not re.match(r"\d{4}-\d{2}-\d{2}", v):
+            raise ValueError("Date must be in YYYY-MM-DD format")
+        return v
+
+# --- API Endpoints ---
+
+@app.post("/scrape")
+async def trigger_scrape(request: ScrapeRequest, background_tasks: BackgroundTasks):
+    """
+    API 1: Trigger the scraping process.
+    - mode='weekend': Next 21 days (Fri, Sat, Sun)
+    - mode='all': Next 21 days (All)
+    - mode='single': Specific date (must provide 'date' field)
+    """
     
-    # --- Authentication Block ---
-    is_authenticated = False
-    if token:
-        print("Checking existing token...")
-        test_search = client.search_facilities("TENIS", 9, datetime.now().strftime('%Y-%m-%d'))
-        if test_search and test_search.get("success"):
-            print("✓ Token valid.")
-            is_authenticated = True
-        else:
-            print("! Token invalid/expired.")
+    # Quick Validation for Single Mode
+    if request.mode == 'single' and not request.date:
+        raise HTTPException(status_code=400, detail="Date is required for 'single' mode")
 
-    if not is_authenticated:
-        if client.login():
-            set_key(".env", "WEB_TOKEN", client.token)
-            is_authenticated = True
-        else:
-            print("✗ Auth Failed."); return
-
-    # --- Configuration ---
-    LOCATION_IDS = [9, 10, 15] 
-    CATEGORY = "TENIS"
-    # Generate dates for the next 21 days, filtering only for Fri, Sat, and Sun
-    dates = [
-        (datetime.now() + timedelta(days=i)).strftime('%Y-%m-%d') 
-        for i in range(1, 22) 
-        if (datetime.now() + timedelta(days=i)).weekday() in [4, 5, 6]
-    ]
-    # Generate dates for the next 21 days, uncomment below to scrape all days
-    # dates = [(datetime.now() + timedelta(days=i)).strftime('%Y-%m-%d') for i in range(1, 22)]
-    # Uncomment below code if want to scrape single date
-    # dates = ["2026-01-09"]
-
-    target_names = [f"COURT {i}" for i in range(1, 11)] + [f"GELANGGANG {i}" for i in range(1, 11)]
+    # Run scraper in background so API returns immediately
+    background_tasks.add_task(run_scraper_process, request.mode, request.date)
     
-    for loc_id in LOCATION_IDS:
-        print(f"\n--- Scraping Location ID: {loc_id} ---")
-        for date_str in dates:
-            print(f"  Fetching Date: {date_str}...")
-            result = client.search_facilities(CATEGORY, loc_id, date_str)
-            
-            if result and result.get("success"):
-                venues = result.get("data", {}).get("data", [])
-                if not venues: continue
-                
-                loc_slug = venues[0].get("location_name", "Unknown").lower().replace(" ", "_")
+    return {
+        "message": "Scraping started in background", 
+        "config": {
+            "mode": request.mode, 
+            "target_date": request.date if request.mode == 'single' else "Range"
+        }
+    }
 
-                for court_name in target_names:
-                    match = next((v for v in venues if v["venue_name"].upper() == court_name), None)
-                    if match:
-                        fname = f"{loc_slug}_{court_name.lower().replace(' ', '_')}_{date_str}.json"
-                        client.save_to_json(match, fname)
-            time.sleep(1) # Prevent rate limiting
+@app.get("/visualize", response_class=HTMLResponse)
+async def get_dashboard():
+    """
+    API 2: Generate and serve the dashboard HTML.
+    """
+    html_content = generate_dashboard_html()
+    return html_content
 
 if __name__ == "__main__":
-    main()
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

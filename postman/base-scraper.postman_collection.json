@@ -1,0 +1,162 @@
+{
+	"info": {
+		"_postman_id": "45ed5776-11f2-4ef3-99e5-6b06a50140dc",
+		"name": "base-scraper",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "10572070",
+		"_collection_link": "https://red-trinity-223353.postman.co/workspace/Template~fad8bead-53ed-4dc3-a7ef-5ea492b7d5be/collection/10572070-45ed5776-11f2-4ef3-99e5-6b06a50140dc?action=share&source=collection_link&creator=10572070"
+	},
+	"item": [
+		{
+			"name": "scrape weekend",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"mode\": \"weekend\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/scrape",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"scrape"
+					]
+				},
+				"description": "Generated from cURL: curl -X POST \"http://127.0.0.1:8000/scrape\" \\\r\n     -H \"Content-Type: application/json\" \\\r\n     -d '{\"mode\": \"weekend\"}'"
+			},
+			"response": []
+		},
+		{
+			"name": "scrape all 21 days",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"mode\": \"all\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/scrape",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"scrape"
+					]
+				},
+				"description": "Generated from cURL: curl -X POST \"http://127.0.0.1:8000/scrape\" \\\r\n     -H \"Content-Type: application/json\" \\\r\n     -d '{\"mode\": \"weekend\"}'"
+			},
+			"response": []
+		},
+		{
+			"name": "scrape single date",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"mode\": \"single\",\r\n    \"date\": \"2025-12-25\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/scrape",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"scrape"
+					]
+				},
+				"description": "Generated from cURL: curl -X POST \"http://127.0.0.1:8000/scrape\" \\\r\n     -H \"Content-Type: application/json\" \\\r\n     -d '{\"mode\": \"single\", \"date\": \"2025-12-25\"}'"
+			},
+			"response": []
+		},
+		{
+			"name": "visualize data - open this in browser",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"mode\": \"single\",\r\n    \"date\": \"2025-12-25\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/visualize",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"visualize"
+					]
+				},
+				"description": "Generated from cURL: curl -X POST \"http://127.0.0.1:8000/scrape\" \\\r\n     -H \"Content-Type: application/json\" \\\r\n     -d '{\"mode\": \"single\", \"date\": \"2025-12-25\"}'"
+			},
+			"response": []
+		}
+	]
+}
